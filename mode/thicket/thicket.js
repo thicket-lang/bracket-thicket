@@ -23,7 +23,6 @@ CodeMirror.defineMode("thicket", function(_config, modeConfig) {
   var largeRE = /[A-Z]/;
   var digitRE = /\d/;
   var hexitRE = /[0-9A-Fa-f]/;
-  var octitRE = /[0-7]/;
   var idRE = /[a-z_A-Z0-9']/;
   var symbolRE = /([~$#?;:@&!%><=+*\/|.^-]|\[|\])([~$#?;:@&!%><=+*\/|_.^-]|\[|\])*/;
   var specialRE = /[(),;[\]`{}]/;
@@ -82,10 +81,6 @@ CodeMirror.defineMode("thicket", function(_config, modeConfig) {
           source.eatWhile(hexitRE); // should require at least 1
           return "integer";
         }
-        if (source.eat(/[oO]/)) {
-          source.eatWhile(octitRE); // should require at least 1
-          return "number";
-        }
       }
       source.eatWhile(digitRE);
       var t = "number";
@@ -129,10 +124,10 @@ CodeMirror.defineMode("thicket", function(_config, modeConfig) {
       var currNest = nest;
       while (!source.eol()) {
         var ch = source.next();
-        if (ch == '{' && source.eat('-')) {
+        if (ch == '/' && source.eat('*')) {
           ++currNest;
         }
-        else if (ch == '-' && source.eat('}')) {
+        else if (ch == '*' && source.eat('/')) {
           --currNest;
           if (currNest == 0) {
             setState(normal);
@@ -193,10 +188,12 @@ CodeMirror.defineMode("thicket", function(_config, modeConfig) {
         "def", "let", "in", "if", "for", "yield", "new", "with");
 
     setType("builtin")(
-	"\.", ":", "::", "->", "\\", "\"", "'", "(", ")", "{", "}", "," ,"=", "$");
+	"\.", ":", "::", "->", "\\", "\"", "'", "(", ")", 
+	"{", "}", "," ,"=", "$");
 
     setType("builtin")(
-	"do", "return","when", "then", "else", "fold", "map", "flatmap", "filter");
+	"do", "return","when", "then", "else", "fold", "map", 
+	"flatmap", "filter", "native", "internal");
 
     var override = modeConfig.overrideKeywords;
     if (override) for (var word in override) if (override.hasOwnProperty(word))
