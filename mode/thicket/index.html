@@ -1,0 +1,95 @@
+<!doctype html>
+
+<title>CodeMirror: Thicket mode</title>
+<meta charset="utf-8"/>
+<link rel=stylesheet href="../../doc/docs.css">
+
+<link rel="stylesheet" href="../../lib/codemirror.css">
+<link rel="stylesheet" href="../../theme/elegant.css">
+<script src="../../lib/codemirror.js"></script>
+<script src="../../addon/edit/matchbrackets.js"></script>
+<script src="thicket.js"></script>
+<style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
+<div id=nav>
+  <a href="http://codemirror.net"><img id=logo src="../../doc/logo.png"></a>
+
+  <ul>
+    <li><a href="../../index.html">Home</a>
+    <li><a href="../../doc/manual.html">Manual</a>
+    <li><a href="https://github.com/codemirror/codemirror">Code</a>
+  </ul>
+  <ul>
+    <li><a href="../index.html">Language modes</a>
+    <li><a class=active href="#">Thicket</a>
+  </ul>
+</div>
+
+<article>
+<h2>Thicket mode</h2>
+<form><textarea id="code" name="code">
+module Data.Try
+
+from Data.Boolean import bool
+from Data.String import string
+from Data.Option import option,some,none
+from Data.Monadic import Monadic
+
+from Logic.Combinators import combinators
+
+type Try[a] {
+    model Success { _ : a }
+    model Failure { _ : string }
+}
+
+class try[a] this:Try[a] {  
+    +Monadic[try a]
+
+    unbox       : Try[a]
+    fold        : [b] (a -> b) -> (string -> b) -> b
+    recoverWith : (string -> a) -> a
+} {
+    def unbox = this
+    
+    def Failure.fold _ f = f this._
+    def Success.fold s _ = s this._
+
+    def map f = self fold (s -> success $ f s) failure
+    def flatmap f = self fold f failure
+
+    def Failure.filter _ = self
+    def Success.filter p = p this._ fold self $ failure "Filter fails"
+
+    def recoverWith = self fold combinators.I
+}
+
+/**
+ * Factories
+ */
+
+def success : [a] a -> try[a] = a -> { 
+    try $ Success a 
+}
+
+def failure : [a] string -> try[a] = a -> { 
+    try $ Failure a 
+}
+
+/**
+ * Adapters
+ */
+
+def adapter try2option : [a] try[a] -> option[a] = t -> {
+    t fold some (_ -> none)
+}
+</textarea></form>
+
+    <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        theme: "elegant"
+      });
+    </script>
+
+    <p><strong>MIME types defined:</strong> <code>text/x-thicket</code>.</p>
+  </article>
