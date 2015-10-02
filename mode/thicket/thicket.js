@@ -221,6 +221,6 @@ CodeMirror.defineMode("thicket", function(_config, modeConfig) {
 
 });
 
-CodeMirror.defineMIME("text/x-thicket", "thicket");
+CodeMirror.defineMIME("application/thicket", "thicket");
 
 });
