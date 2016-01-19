@@ -36,7 +36,7 @@ type Try[a] {
 }
 
 class try[a] this:Try[a] {  
-    +Monadic[try a]
+    with Monadic[try,a]
 
     unbox       : Try[a]
     fold        : [b] (a -> b) -> (string -> b) -> b
